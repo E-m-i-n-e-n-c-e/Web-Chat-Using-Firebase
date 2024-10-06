@@ -15,4 +15,4 @@ This is a simple chat application built using Firebase  real-time database . The
 - JavaScript
 - Firebase (Realtime Database)
 
-### You can check this website out at https://e-m-i-n-e-n-c-e.github.io/Web-Chat/
+### You can check this website out at [https://e-m-i-n-e-n-c-e.github.io/Web-Chat/](https://e-m-i-n-e-n-c-e.github.io/Web-Chat-Using-Firebase/)
