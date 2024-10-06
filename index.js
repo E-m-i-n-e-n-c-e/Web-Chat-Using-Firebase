@@ -70,8 +70,8 @@ window.onload = function() {
   
         var join_input = document.createElement('input')
         join_input.setAttribute('id', 'join_input')
-        join_input.setAttribute('maxlength', 15)
-        join_input.placeholder = 'No.... It\'s Patrick Star'
+        join_input.setAttribute('maxlength', 40)
+        join_input.placeholder = 'Who are you?'
         // Every time we type into the join_input
         join_input.onkeyup  = function(){
           // If the input we have is longer that 0 letters
@@ -185,7 +185,7 @@ window.onload = function() {
   
         var chat_logout = document.createElement('button')
         chat_logout.setAttribute('id', 'chat_logout')
-        chat_logout.textContent = `${parent.get_name()} • logout`
+        chat_logout.innerHTML = `<h3>${parent.get_name()} • logout</h3>`
         // "Logout" is really just deleting the name from the localStorage
         chat_logout.onclick = function(){
           localStorage.clear()
