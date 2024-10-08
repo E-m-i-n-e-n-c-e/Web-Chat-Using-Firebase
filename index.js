@@ -72,17 +72,28 @@ window.onload = function() {
         join_input.setAttribute('id', 'join_input')
         join_input.setAttribute('maxlength', 40)
         join_input.placeholder = 'Who are you?'
+
+        var room_input_container = document.createElement('div')
+        room_input_container.setAttribute('id', 'room_input_container')
+  
+        var room_input = document.createElement('input')
+        room_input.setAttribute('id', 'room_input')
+        room_input.setAttribute('maxlength', 40)
+        room_input.placeholder = 'Where do you want to chat?'
         // Every time we type into the join_input
-        join_input.onkeyup  = function(){
+        join_input.onkeyup  =room_input.onkeyup= function(){
           // If the input we have is longer that 0 letters
-          if(join_input.value.length > 0){
+          
+          if(join_input.value.length > 0 && room_input.value.length > 0){
             // Make the button light up
             join_button.classList.add('enabled')
+
             // Allow the user to click the button
             join_button.onclick = function(){
-              // Save the name to local storage. Passing in
+              // Save the name to local storage. Passing in 
               // the join_input.value
               parent.save_name(join_input.value)
+              parent.save_room(room_input.value)
               // Remove the join_container. So the site doesn't look weird.
               join_container.remove()
               // parent = this. But it is not the join_button
@@ -97,9 +108,10 @@ window.onload = function() {
         }
   
         // Append everything to the body
+        room_input_container.append(room_input)
         join_button_container.append(join_button)
         join_input_container.append(join_input)
-        join_inner_container.append(join_input_container, join_button_container)
+        join_inner_container.append(join_input_container,room_input_container, join_button_container)
         join_container.append(join_inner_container)
         document.body.append(join_container)
       }
@@ -208,32 +220,38 @@ window.onload = function() {
         // Save name to localStorage
         localStorage.setItem('name', name)
       }
+      save_room(room){
+        // Save room to localStorage
+        localStorage.setItem('room', room)
+      }
       // Sends message/saves the message to firebase database
-      send_message(message){
-        var parent = this
-        // if the local storage name is null and there is no message
-        // then return/don't send the message. The user is somehow hacking
-        // to send messages. Or they just deleted the
-        // localstorage themselves. But hacking sounds cooler!!
-        if(parent.get_name() == null && message == null){
-          return
+      send_message(message) {
+        var parent = this;
+      
+        // if the local storage name is null and there is no message, return
+        if (parent.get_name() == null && message == null) {
+          return;
         }
-  
+      
         // Get the firebase database value
         db.ref('chats/').once('value', function(message_object) {
-          // This index is mortant. It will help organize the chat in order
-          var index = parseFloat(message_object.numChildren()) + 1
+          // This index is important. It will help organize the chat in order
+          var index = parseFloat(message_object.numChildren()) + 1;
+          var room_id = parent.get_room(); // Get the room ID
+      
           db.ref('chats/' + `message_${index}`).set({
             name: parent.get_name(),
             message: message,
-            index: index
+            index: index,
+            room_id: room_id // Send room ID to Firebase
           })
-          .then(function(){
-            // After we send the chat refresh to get the new messages
-            parent.refresh_chat()
-          })
-        })
+          .then(function() {
+            // After sending the chat, refresh to get the new messages
+            parent.refresh_chat();
+          });
+        });
       }
+      
       // Get name. Gets the username from localStorage
       get_name(){
         // Get the name from localstorage
@@ -244,10 +262,20 @@ window.onload = function() {
           return null
         }
       }
+      // Get room. Gets the room from localStorage
+      get_room(){
+        // Get the room from localstorage
+        if(localStorage.getItem('room') != null){
+          return localStorage.getItem('room')
+        }else{
+          this.home()
+          return null
+        }
+      }
       // Refresh chat gets the message/chat data from firebase
       refresh_chat(){
         var chat_content_container = document.getElementById('chat_content_container')
-  
+        var parent = this;
         // Get the chats from firebase
         db.ref('chats/').on('value', function(messages_object) {
           // When we get the data clear chat_content_container
@@ -268,6 +296,9 @@ window.onload = function() {
   
           for (var i, i = 0; i < messages.length; i++) {
             // The guide is simply an array from 0 to the messages.length
+            if(messages[i].room_id != parent.get_room()){
+              continue
+            }
             guide.push(i+1)
             // unordered is the [message, index_of_the_message]
             unordered.push([messages[i], messages[i].index]);
@@ -334,6 +365,7 @@ window.onload = function() {
     // Go to home.
     if(app.get_name() != null){
       app.chat()
+      
     }
   }
   
